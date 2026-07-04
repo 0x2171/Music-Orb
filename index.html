@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Orb</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #3d0000 50%, #1a0000 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .orb-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .orb {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(139, 0, 0, 0.6),
+                        0 0 80px rgba(139, 0, 0, 0.4);
+            position: relative;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .orb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .waves {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .wave {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(139, 0, 0, 0.6);
+            border-radius: 50%;
+            opacity: 0;
+            animation: wave-pulse 2s infinite;
+        }
+
+        .wave:nth-child(1) { animation-delay: 0s; }
+        .wave:nth-child(2) { animation-delay: 0.5s; }
+        .wave:nth-child(3) { animation-delay: 1s; }
+        .wave:nth-child(4) { animation-delay: 1.5s; }
+
+        @keyframes wave-pulse {
+            0% {
+                width: 200px;
+                height: 200px;
+                opacity: 0.8;
+            }
+            100% {
+                width: 400px;
+                height: 400px;
+                opacity: 0;
+            }
+        }
+
+        .controls {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .progress-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(139, 0, 0, 0.3);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b0000, #dc143c);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            color: #dc143c;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #5a0000, #8b0000);
+            border: 3px solid #dc143c;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #ff4444;
+            box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4),
+                        inset 0 2px 5px rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .btn:focus,
+        .btn:active,
+        .btn:focus-visible {
+            outline: none;
+            box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4),
+                        inset 0 2px 5px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #8b0000, #dc143c);
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(220, 20, 60, 0.6),
+                        inset 0 2px 5px rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn i {
+            font-size: 20px;
+            pointer-events: none;
+        }
+
+        .btn-play {
+            width: 75px;
+            height: 75px;
+            background: linear-gradient(135deg, #8b0000, #dc143c);
+            border: 4px solid #ff4444;
+            box-shadow: 0 6px 30px rgba(220, 20, 60, 0.6),
+                        0 0 50px rgba(220, 20, 60, 0.4),
+                        inset 0 3px 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-play:focus,
+        .btn-play:active,
+        .btn-play:focus-visible {
+            outline: none;
+            box-shadow: 0 6px 30px rgba(220, 20, 60, 0.6),
+                        0 0 50px rgba(220, 20, 60, 0.4),
+                        inset 0 3px 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-play:hover {
+            background: linear-gradient(135deg, #a00000, #ff1744);
+            box-shadow: 0 8px 40px rgba(220, 20, 60, 0.8),
+                        0 0 60px rgba(220, 20, 60, 0.5),
+                        inset 0 3px 8px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-play i {
+            font-size: 28px;
+            color: #ffffff;
+        }
+
+        .song-info {
+            color: #dc143c;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+        }
+
+        /* Эквалайзер */
+        .equalizer {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
+            height: 60px;
+            margin-top: 20px;
+        }
+
+        .bar {
+            width: 6px;
+            background: linear-gradient(to top, #8b0000, #dc143c, #ff4444);
+            border-radius: 3px;
+            transition: height 0.05s ease;
+            box-shadow: 0 0 5px rgba(220, 20, 60, 0.5);
+        }
+
+        @media (max-width: 360px) {
+            .orb-container {
+                width: 200px;
+                height: 200px;
+            }
+            .orb {
+                width: 160px;
+                height: 160px;
+            }
+            @keyframes wave-pulse {
+                0% {
+                    width: 160px;
+                    height: 160px;
+                    opacity: 0.8;
+                }
+                100% {
+                    width: 320px;
+                    height: 320px;
+                    opacity: 0;
+                }
+            }
+            .equalizer {
+                height: 50px;
+            }
+            .bar {
+                width: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb-container">
+        <div class="waves">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+        <div class="orb">
+            <img src="https://raw.githubusercontent.com/0x2171/Music-Orb/refs/heads/main/Orb.jpg" alt="Music Orb">
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="song-info">Mia Boyka - Eksponat</div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+
+        <!-- Эквалайзер -->
+        <div class="equalizer" id="equalizer"></div>
+
+        <div class="buttons">
+            <button class="btn" id="prevBtn" aria-label="Previous">
+                <i class="fas fa-backward-step"></i>
+            </button>
+            
+            <button class="btn btn-play" id="playBtn" aria-label="Play">
+                <i class="fas fa-play" id="playIcon"></i>
+            </button>
+            
+            <button class="btn" id="nextBtn" aria-label="Next">
+                <i class="fas fa-forward-step"></i>
+            </button>
+        </div>
+    </div>
+
+    <audio id="audio" crossorigin="anonymous">
+        <source src="https://raw.githubusercontent.com/0x2171/Music-Orb/refs/heads/main/Mia_Boyka-Eksponat.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const audio = document.getElementById('audio');
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const orb = document.querySelector('.orb');
+        const waves = document.querySelectorAll('.wave');
+        const equalizer = document.getElementById('equalizer');
+
+        let isPlaying = false;
+        let audioContext;
+        let analyser;
+        let source;
+        let dataArray;
+
+        // Создание полосок эквалайзера
+        const barCount = 20;
+        for (let i = 0; i < barCount; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = '5px';
+            equalizer.appendChild(bar);
+        }
+        const bars = document.querySelectorAll('.bar');
+
+        // Инициализация Web Audio API
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                source = audioContext.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                analyser.fftSize = 256;
+                const bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+            }
+        }
+
+        // Анимация волн и эквалайзера в зависимости от музыки
+        function animateWaves() {
+            if (!isPlaying) return;
+
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Среднее значение частот
+            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            const scale = 1 + (average / 256) * 0.3;
+            
+            // Анимация орба
+            orb.style.transform = `scale(${scale})`;
+            
+            // Анимация волн
+            waves.forEach((wave, index) => {
+                const intensity = (average / 256) * (1 - index * 0.2);
+                wave.style.borderColor = `rgba(220, 20, 60, ${intensity})`;
+            });
+
+            // Анимация эквалайзера
+            bars.forEach((bar, index) => {
+                // Берем разные частоты для каждой полоски
+                const dataIndex = Math.floor((index / barCount) * dataArray.length);
+                const value = dataArray[dataIndex];
+                const height = Math.max(5, (value / 255) * 60);
+                bar.style.height = `${height}px`;
+            });
+
+            requestAnimationFrame(animateWaves);
+        }
+
+        // Форматирование времени
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Переключение play/pause
+        playBtn.addEventListener('click', () => {
+            initAudioContext();
+            
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            if (isPlaying) {
+                audio.pause();
+                playIcon.className = 'fas fa-play';
+                isPlaying = false;
+                // Сброс эквалайзера
+                bars.forEach(bar => bar.style.height = '5px');
+            } else {
+                audio.play();
+                playIcon.className = 'fas fa-pause';
+                isPlaying = true;
+                animateWaves();
+            }
+        });
+
+        // Обновление прогресса
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${progress}%`;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+        });
+
+        // Установка длительности
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        // Перемотка по клику на прогресс-бар
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        });
+
+        // Кнопки prev/next (перемотка на 10 секунд)
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+        });
+
+        // Автопереход в начало после окончания
+        audio.addEventListener('ended', () => {
+            isPlaying = false;
+            playIcon.className = 'fas fa-play';
+            audio.currentTime = 0;
+            progressFill.style.width = '0%';
+            currentTimeEl.textContent = '0:00';
+            bars.forEach(bar => bar.style.height = '5px');
+        });
+    </script>
+</body>
+</html>
